@@ -1,4 +1,6 @@
 // Package devlink provides access to Linux's devlink interface.
+//
+// For more information on devlink, please see: https://lwn.net/Articles/674867/.
 package devlink
 
 import (
