@@ -23,14 +23,24 @@ func TestLinuxClientIntegration(t *testing.T) {
 	// TODO(mdlayher): expand upon this.
 
 	t.Run("devices", func(t *testing.T) {
-		if _, err := c.Devices(); err != nil {
+		devices, err := c.Devices()
+		if err != nil {
 			t.Fatalf("failed to get devices: %v", err)
+		}
+
+		for _, d := range devices {
+			t.Logf("device: %+v", d)
 		}
 	})
 
 	t.Run("ports", func(t *testing.T) {
-		if _, err := c.Ports(); err != nil {
-			t.Fatalf("failed to get devices: %v", err)
+		ports, err := c.Ports()
+		if err != nil {
+			t.Fatalf("failed to get ports: %v", err)
+		}
+
+		for _, p := range ports {
+			t.Logf("port: %+v", p)
 		}
 	})
 }
