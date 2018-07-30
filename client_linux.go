@@ -8,7 +8,6 @@ import (
 	"github.com/mdlayher/devlink/internal/dlh"
 	"github.com/mdlayher/genetlink"
 	"github.com/mdlayher/netlink"
-	"github.com/mdlayher/netlink/nlenc"
 )
 
 var _ osClient = &client{}
@@ -115,26 +114,30 @@ func parsePorts(msgs []genetlink.Message) ([]*Port, error) {
 
 	ps := make([]*Port, 0, len(msgs))
 	for _, m := range msgs {
-		attrs, err := netlink.UnmarshalAttributes(m.Data)
+		ad, err := netlink.NewAttributeDecoder(m.Data)
 		if err != nil {
 			return nil, err
 		}
 
 		var p Port
-		for _, a := range attrs {
-			switch a.Type {
+		for ad.Next() {
+			switch ad.Type() {
 			case dlh.AttrBusName:
-				p.Bus = nlenc.String(a.Data)
+				p.Bus = ad.String()
 			case dlh.AttrDevName:
-				p.Device = nlenc.String(a.Data)
+				p.Device = ad.String()
 			case dlh.AttrPortIndex:
-				p.Port = int(nlenc.Uint32(a.Data))
+				p.Port = int(ad.Uint32())
 			case dlh.AttrPortType:
-				p.Type = PortType(nlenc.Uint16(a.Data))
+				p.Type = PortType(ad.Uint16())
 			// Allow netdev/ibdev name to share the same "Name" field.
 			case dlh.AttrPortNetdevName, dlh.AttrPortIbdevName:
-				p.Name = nlenc.String(a.Data)
+				p.Name = ad.String()
 			}
+		}
+
+		if err := ad.Err(); err != nil {
+			return nil, err
 		}
 
 		ps = append(ps, &p)
