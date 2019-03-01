@@ -127,7 +127,7 @@ func TestLinuxClientDevicesOK(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			const (
 				cmd   = dlh.CmdGet
-				flags = netlink.HeaderFlagsRequest | netlink.HeaderFlagsDump
+				flags = netlink.Request | netlink.Dump
 			)
 
 			fn := func(_ genetlink.Message, _ netlink.Message) ([]genetlink.Message, error) {

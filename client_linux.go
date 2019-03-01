@@ -56,7 +56,7 @@ func (c *client) Devices() ([]*Device, error) {
 		},
 	}
 
-	flags := netlink.HeaderFlagsRequest | netlink.HeaderFlagsDump
+	flags := netlink.Request | netlink.Dump
 
 	msgs, err := c.c.Execute(msg, c.family.ID, flags)
 	if err != nil {
@@ -75,7 +75,7 @@ func (c *client) Ports() ([]*Port, error) {
 		},
 	}
 
-	flags := netlink.HeaderFlagsRequest | netlink.HeaderFlagsDump
+	flags := netlink.Request | netlink.Dump
 
 	msgs, err := c.c.Execute(msg, c.family.ID, flags)
 	if err != nil {
