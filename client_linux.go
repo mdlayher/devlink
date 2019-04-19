@@ -3,8 +3,6 @@
 package devlink
 
 import (
-	"os"
-
 	"github.com/mdlayher/devlink/internal/dlh"
 	"github.com/mdlayher/genetlink"
 	"github.com/mdlayher/netlink"
@@ -109,7 +107,7 @@ func parseDevices(msgs []genetlink.Message) ([]*Device, error) {
 func parsePorts(msgs []genetlink.Message) ([]*Port, error) {
 	if len(msgs) == 0 {
 		// No devlink response found.
-		return nil, os.ErrNotExist
+		return nil, nil
 	}
 
 	ps := make([]*Port, 0, len(msgs))

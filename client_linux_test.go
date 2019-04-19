@@ -3,7 +3,6 @@
 package devlink
 
 import (
-	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -15,24 +14,36 @@ import (
 	"github.com/mdlayher/netlink/nltest"
 )
 
-func TestLinuxClientIsNotExist(t *testing.T) {
+func TestLinuxClientEmptyResponse(t *testing.T) {
 	tests := []struct {
 		name string
-		fn   func(c *client) error
+		fn   func(t *testing.T, c *client)
 		msgs []genetlink.Message
 	}{
 		{
 			name: "devices",
-			fn: func(c *client) error {
-				_, err := c.Devices()
-				return err
+			fn: func(t *testing.T, c *client) {
+				devices, err := c.Devices()
+				if err != nil {
+					t.Fatalf("failed to get devices: %v", err)
+				}
+
+				if diff := cmp.Diff(0, len(devices)); diff != "" {
+					t.Fatalf("unexpected number of devices (-want +got):\n%s", diff)
+				}
 			},
 		},
 		{
 			name: "ports",
-			fn: func(c *client) error {
-				_, err := c.Ports()
-				return err
+			fn: func(t *testing.T, c *client) {
+				ports, err := c.Ports()
+				if err != nil {
+					t.Fatalf("failed to get ports: %v", err)
+				}
+
+				if diff := cmp.Diff(0, len(ports)); diff != "" {
+					t.Fatalf("unexpected number of ports (-want +got):\n%s", diff)
+				}
 			},
 		},
 	}
@@ -44,9 +55,7 @@ func TestLinuxClientIsNotExist(t *testing.T) {
 			})
 			defer c.Close()
 
-			if err := tt.fn(c); !os.IsNotExist(err) {
-				t.Fatalf("expected is not exist, but got: %v", err)
-			}
+			tt.fn(t, c)
 		})
 	}
 }
