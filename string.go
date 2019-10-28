@@ -4,6 +4,16 @@ package devlink
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[Unknown-0]
+	_ = x[Auto-1]
+	_ = x[Ethernet-2]
+	_ = x[InfiniBand-3]
+}
+
 const _PortType_name = "UnknownAutoEthernetInfiniBand"
 
 var _PortType_index = [...]uint8{0, 7, 11, 19, 29}
