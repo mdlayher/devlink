@@ -6,12 +6,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mdlayher/devlink/internal/dlh"
 	"github.com/mdlayher/genetlink"
 	"github.com/mdlayher/genetlink/genltest"
 	"github.com/mdlayher/netlink"
 	"github.com/mdlayher/netlink/nlenc"
 	"github.com/mdlayher/netlink/nltest"
+	"golang.org/x/sys/unix"
 )
 
 func TestLinuxClientEmptyResponse(t *testing.T) {
@@ -77,11 +77,11 @@ func TestLinuxClientDevicesOK(t *testing.T) {
 			msgs: []genetlink.Message{{
 				Data: nltest.MustMarshalAttributes([]netlink.Attribute{
 					{
-						Type: dlh.AttrBusName,
+						Type: unix.DEVLINK_ATTR_BUS_NAME,
 						Data: nlenc.Bytes(bus),
 					},
 					{
-						Type: dlh.AttrDevName,
+						Type: unix.DEVLINK_ATTR_DEV_NAME,
 						Data: nlenc.Bytes(deviceA),
 					},
 				}),
@@ -97,11 +97,11 @@ func TestLinuxClientDevicesOK(t *testing.T) {
 				{
 					Data: nltest.MustMarshalAttributes([]netlink.Attribute{
 						{
-							Type: dlh.AttrBusName,
+							Type: unix.DEVLINK_ATTR_BUS_NAME,
 							Data: nlenc.Bytes(bus),
 						},
 						{
-							Type: dlh.AttrDevName,
+							Type: unix.DEVLINK_ATTR_DEV_NAME,
 							Data: nlenc.Bytes(deviceA),
 						},
 					}),
@@ -109,11 +109,11 @@ func TestLinuxClientDevicesOK(t *testing.T) {
 				{
 					Data: nltest.MustMarshalAttributes([]netlink.Attribute{
 						{
-							Type: dlh.AttrBusName,
+							Type: unix.DEVLINK_ATTR_BUS_NAME,
 							Data: nlenc.Bytes(bus),
 						},
 						{
-							Type: dlh.AttrDevName,
+							Type: unix.DEVLINK_ATTR_DEV_NAME,
 							Data: nlenc.Bytes(deviceB),
 						},
 					}),
@@ -135,7 +135,7 @@ func TestLinuxClientDevicesOK(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			const (
-				cmd   = dlh.CmdGet
+				cmd   = unix.DEVLINK_CMD_GET
 				flags = netlink.Request | netlink.Dump
 			)
 
@@ -163,8 +163,8 @@ const familyID = 20
 func testClient(t *testing.T, fn genltest.Func) *client {
 	family := genetlink.Family{
 		ID:      familyID,
-		Version: dlh.GenlVersion,
-		Name:    dlh.GenlName,
+		Version: unix.DEVLINK_GENL_VERSION,
+		Name:    unix.DEVLINK_GENL_NAME,
 	}
 
 	conn := genltest.Dial(genltest.ServeFamily(family, fn))

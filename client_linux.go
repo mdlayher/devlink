@@ -3,9 +3,9 @@
 package devlink
 
 import (
-	"github.com/mdlayher/devlink/internal/dlh"
 	"github.com/mdlayher/genetlink"
 	"github.com/mdlayher/netlink"
+	"golang.org/x/sys/unix"
 )
 
 var _ osClient = &client{}
@@ -28,7 +28,7 @@ func newClient() (*client, error) {
 
 // initClient is the internal client constructor used in some tests.
 func initClient(c *genetlink.Conn) (*client, error) {
-	f, err := c.GetFamily(dlh.GenlName)
+	f, err := c.GetFamily(unix.DEVLINK_GENL_NAME)
 	if err != nil {
 		_ = c.Close()
 		return nil, err
@@ -49,8 +49,8 @@ func (c *client) Close() error {
 func (c *client) Devices() ([]*Device, error) {
 	msg := genetlink.Message{
 		Header: genetlink.Header{
-			Command: dlh.CmdGet,
-			Version: dlh.GenlVersion,
+			Command: unix.DEVLINK_CMD_GET,
+			Version: unix.DEVLINK_GENL_VERSION,
 		},
 	}
 
@@ -68,8 +68,8 @@ func (c *client) Devices() ([]*Device, error) {
 func (c *client) Ports() ([]*Port, error) {
 	msg := genetlink.Message{
 		Header: genetlink.Header{
-			Command: dlh.CmdPortGet,
-			Version: dlh.GenlVersion,
+			Command: unix.DEVLINK_CMD_PORT_GET,
+			Version: unix.DEVLINK_GENL_VERSION,
 		},
 	}
 
@@ -120,16 +120,16 @@ func parsePorts(msgs []genetlink.Message) ([]*Port, error) {
 		var p Port
 		for ad.Next() {
 			switch ad.Type() {
-			case dlh.AttrBusName:
+			case unix.DEVLINK_ATTR_BUS_NAME:
 				p.Bus = ad.String()
-			case dlh.AttrDevName:
+			case unix.DEVLINK_ATTR_DEV_NAME:
 				p.Device = ad.String()
-			case dlh.AttrPortIndex:
+			case unix.DEVLINK_ATTR_PORT_INDEX:
 				p.Port = int(ad.Uint32())
-			case dlh.AttrPortType:
+			case unix.DEVLINK_ATTR_PORT_TYPE:
 				p.Type = PortType(ad.Uint16())
 			// Allow netdev/ibdev name to share the same "Name" field.
-			case dlh.AttrPortNetdevName, dlh.AttrPortIbdevName:
+			case unix.DEVLINK_ATTR_PORT_NETDEV_NAME, unix.DEVLINK_ATTR_PORT_IBDEV_NAME:
 				p.Name = ad.String()
 			}
 		}
