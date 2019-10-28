@@ -41,22 +41,11 @@ func initClient(c *genetlink.Conn) (*client, error) {
 }
 
 // Close implements osClient.
-func (c *client) Close() error {
-	return c.c.Close()
-}
+func (c *client) Close() error { return c.c.Close() }
 
 // Devices implements osClient.
 func (c *client) Devices() ([]*Device, error) {
-	msg := genetlink.Message{
-		Header: genetlink.Header{
-			Command: unix.DEVLINK_CMD_GET,
-			Version: unix.DEVLINK_GENL_VERSION,
-		},
-	}
-
-	flags := netlink.Request | netlink.Dump
-
-	msgs, err := c.c.Execute(msg, c.family.ID, flags)
+	msgs, err := c.execute(unix.DEVLINK_CMD_GET, netlink.Dump)
 	if err != nil {
 		return nil, err
 	}
@@ -66,21 +55,28 @@ func (c *client) Devices() ([]*Device, error) {
 
 // Ports implements osClient.
 func (c *client) Ports() ([]*Port, error) {
-	msg := genetlink.Message{
-		Header: genetlink.Header{
-			Command: unix.DEVLINK_CMD_PORT_GET,
-			Version: unix.DEVLINK_GENL_VERSION,
-		},
-	}
-
-	flags := netlink.Request | netlink.Dump
-
-	msgs, err := c.c.Execute(msg, c.family.ID, flags)
+	msgs, err := c.execute(unix.DEVLINK_CMD_PORT_GET, netlink.Dump)
 	if err != nil {
 		return nil, err
 	}
 
 	return parsePorts(msgs)
+}
+
+// execute executes the specified command with additional header flags. The
+// netlink.Request header flag is automatically set.
+func (c *client) execute(cmd uint8, flags netlink.HeaderFlags) ([]genetlink.Message, error) {
+	return c.c.Execute(
+		genetlink.Message{
+			Header: genetlink.Header{
+				Command: cmd,
+				Version: unix.DEVLINK_GENL_VERSION,
+			},
+		},
+		// Always pass the genetlink family ID and request flag.
+		c.family.ID,
+		netlink.Request|flags,
+	)
 }
 
 // parseDevices parses Devices from a slice of generic netlink messages.
