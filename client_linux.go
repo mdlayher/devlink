@@ -45,7 +45,7 @@ func (c *client) Close() error { return c.c.Close() }
 
 // Devices implements osClient.
 func (c *client) Devices() ([]*Device, error) {
-	msgs, err := c.execute(unix.DEVLINK_CMD_GET, netlink.Dump)
+	msgs, err := c.execute(unix.DEVLINK_CMD_GET, netlink.Dump, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *client) Devices() ([]*Device, error) {
 
 // Ports implements osClient.
 func (c *client) Ports() ([]*Port, error) {
-	msgs, err := c.execute(unix.DEVLINK_CMD_PORT_GET, netlink.Dump)
+	msgs, err := c.execute(unix.DEVLINK_CMD_PORT_GET, netlink.Dump, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -65,13 +65,14 @@ func (c *client) Ports() ([]*Port, error) {
 
 // execute executes the specified command with additional header flags. The
 // netlink.Request header flag is automatically set.
-func (c *client) execute(cmd uint8, flags netlink.HeaderFlags) ([]genetlink.Message, error) {
+func (c *client) execute(cmd uint8, flags netlink.HeaderFlags, data []byte) ([]genetlink.Message, error) {
 	return c.c.Execute(
 		genetlink.Message{
 			Header: genetlink.Header{
 				Command: cmd,
 				Version: unix.DEVLINK_GENL_VERSION,
 			},
+			Data: data,
 		},
 		// Always pass the genetlink family ID and request flag.
 		c.family.ID,
