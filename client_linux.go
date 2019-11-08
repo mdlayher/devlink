@@ -68,7 +68,7 @@ func (c *client) Ports() ([]*Port, error) {
 // DpipeTables implements osClient.
 func (c *client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
 	if dev == nil {
-		return nil, fmt.Errorf("Invalid argument")
+		return nil, fmt.Errorf("invalid argument")
 	}
 	encoder := netlink.NewAttributeEncoder()
 	encoder.String(unix.DEVLINK_ATTR_BUS_NAME, dev.Bus)
