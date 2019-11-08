@@ -39,11 +39,17 @@ func (c *Client) Ports() ([]*Port, error) {
 	return c.c.Ports()
 }
 
+// DpipeTables retrieves all devlink DPIPE tables attached to specified device on this system.
+func (c *Client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
+	return c.c.DpipeTables(dev)
+}
+
 // An osClient is the operating system-specific implementation of Client.
 type osClient interface {
 	io.Closer
 	Devices() ([]*Device, error)
 	Ports() ([]*Port, error)
+	DpipeTables(*Device) ([]*DpipeTable, error)
 }
 
 // A Device is a devlink device.
@@ -72,4 +78,13 @@ type Port struct {
 	Port   int
 	Type   PortType
 	Name   string
+}
+
+// A DpipeTable is a devlink DPIPE table
+type DpipeTable struct {
+	Bus             string
+	Device          string
+	Name            string
+	Size            uint64
+	CountersEnabled bool
 }

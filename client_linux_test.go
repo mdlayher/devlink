@@ -15,6 +15,10 @@ import (
 )
 
 func TestLinuxClientEmptyResponse(t *testing.T) {
+	const (
+		bus    = "pci"
+		device = "0000:01:00.0"
+	)
 	tests := []struct {
 		name string
 		fn   func(t *testing.T, c *client)
@@ -43,6 +47,20 @@ func TestLinuxClientEmptyResponse(t *testing.T) {
 
 				if diff := cmp.Diff(0, len(ports)); diff != "" {
 					t.Fatalf("unexpected number of ports (-want +got):\n%s", diff)
+				}
+			},
+		},
+		{
+			name: "dpipe_tables",
+			fn: func(t *testing.T, c *client) {
+				dev := Device{bus, device}
+				tables, err := c.DpipeTables(&dev)
+				if err != nil {
+					t.Fatalf("failed to get DPIPE tables: %v", err)
+				}
+
+				if diff := cmp.Diff(0, len(tables)); diff != "" {
+					t.Fatalf("unexpected number of DPIPE tables (-want +got):\n%s", diff)
 				}
 			},
 		},

@@ -3,6 +3,8 @@
 package devlink
 
 import (
+	"fmt"
+
 	"github.com/mdlayher/genetlink"
 	"github.com/mdlayher/netlink"
 	"golang.org/x/sys/unix"
@@ -61,6 +63,27 @@ func (c *client) Ports() ([]*Port, error) {
 	}
 
 	return parsePorts(msgs)
+}
+
+// DpipeTables implements osClient.
+func (c *client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
+	if dev == nil {
+		return nil, fmt.Errorf("Invalid argument")
+	}
+	encoder := netlink.NewAttributeEncoder()
+	encoder.String(unix.DEVLINK_ATTR_BUS_NAME, dev.Bus)
+	encoder.String(unix.DEVLINK_ATTR_DEV_NAME, dev.Device)
+	data, err := encoder.Encode()
+	if err != nil {
+		return nil, err
+	}
+
+	msgs, err := c.execute(unix.DEVLINK_CMD_DPIPE_TABLE_GET, netlink.Acknowledge, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return parseDpipeTables(msgs)
 }
 
 // execute executes the specified command with additional header flags. The
@@ -139,4 +162,61 @@ func parsePorts(msgs []genetlink.Message) ([]*Port, error) {
 	}
 
 	return ps, nil
+}
+
+// parseDpipeTables parses DPIPE tables from a slice of generic netlink messages.
+func parseDpipeTables(msgs []genetlink.Message) ([]*DpipeTable, error) {
+	var bus, dev string
+	if len(msgs) == 0 {
+		// No devlink response found.
+		return nil, nil
+	}
+
+	ts := make([]*DpipeTable, 0, len(msgs))
+	for _, m := range msgs {
+		ad, err := netlink.NewAttributeDecoder(m.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		for ad.Next() {
+			switch ad.Type() {
+			case unix.DEVLINK_ATTR_BUS_NAME:
+				bus = ad.String()
+			case unix.DEVLINK_ATTR_DEV_NAME:
+				dev = ad.String()
+			case unix.DEVLINK_ATTR_DPIPE_TABLES:
+				tablesData := ad.Bytes()
+				adTables, err := netlink.NewAttributeDecoder(tablesData)
+				if err != nil {
+					continue
+				}
+				for adTables.Next() {
+					if adTables.Type() == unix.DEVLINK_ATTR_DPIPE_TABLE {
+						tableData := adTables.Bytes()
+						adTable, err := netlink.NewAttributeDecoder(tableData)
+						if err != nil {
+							continue
+						}
+						var t DpipeTable
+						t.Bus = bus
+						t.Device = dev
+						for adTable.Next() {
+							switch adTable.Type() {
+							case unix.DEVLINK_ATTR_DPIPE_TABLE_NAME:
+								t.Name = adTable.String()
+							case unix.DEVLINK_ATTR_DPIPE_TABLE_SIZE:
+								t.Size = adTable.Uint64()
+							case unix.DEVLINK_ATTR_DPIPE_TABLE_COUNTERS_ENABLED:
+								t.CountersEnabled = adTable.Uint8() != 0
+							}
+						}
+						ts = append(ts, &t)
+					}
+				}
+			}
+
+		}
+	}
+	return ts, nil
 }
