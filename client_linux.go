@@ -73,12 +73,8 @@ func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
 	ae := netlink.NewAttributeEncoder()
 	ae.String(unix.DEVLINK_ATTR_BUS_NAME, dev.Bus)
 	ae.String(unix.DEVLINK_ATTR_DEV_NAME, dev.Device)
-	data, err := ae.Encode()
-	if err != nil {
-		return nil, err
-	}
 
-	msgs, err := c.execute(unix.DEVLINK_CMD_DPIPE_TABLE_GET, netlink.Acknowledge, data)
+	msgs, err := c.execute(unix.DEVLINK_CMD_DPIPE_TABLE_GET, netlink.Acknowledge, ae)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +84,15 @@ func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
 
 // execute executes the specified command with additional header flags. The
 // netlink.Request header flag is automatically set.
-func (c *client) execute(cmd uint8, flags netlink.HeaderFlags, data []byte) ([]genetlink.Message, error) {
+func (c *client) execute(cmd uint8, flags netlink.HeaderFlags, ae *netlink.AttributeEncoder) ([]genetlink.Message, error) {
+	var data []byte
+	var err error
+	if ae != nil {
+		data, err = ae.Encode()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return c.c.Execute(
 		genetlink.Message{
 			Header: genetlink.Header{
