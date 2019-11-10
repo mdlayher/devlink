@@ -191,6 +191,7 @@ func parseDPIPETables(msgs []genetlink.Message) ([]*DPIPETable, error) {
 				dev = ad.String()
 			case unix.DEVLINK_ATTR_DPIPE_TABLES:
 				// Netlink array of DPIPE tables.
+				// Errors while parsing are propagated up to top-level ad.Err check.
 				ad.Nested(func(nad *netlink.AttributeDecoder) error {
 					for nad.Next() {
 						t := parseDPIPETable(nad)
@@ -202,6 +203,9 @@ func parseDPIPETables(msgs []genetlink.Message) ([]*DPIPETable, error) {
 				})
 			}
 
+		}
+		if err := ad.Err(); err != nil {
+			return nil, err
 		}
 	}
 	return ts, nil
