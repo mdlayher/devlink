@@ -70,10 +70,10 @@ func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
 	if dev == nil {
 		return nil, fmt.Errorf("invalid argument")
 	}
-	encoder := netlink.NewAttributeEncoder()
-	encoder.String(unix.DEVLINK_ATTR_BUS_NAME, dev.Bus)
-	encoder.String(unix.DEVLINK_ATTR_DEV_NAME, dev.Device)
-	data, err := encoder.Encode()
+	ae := netlink.NewAttributeEncoder()
+	ae.String(unix.DEVLINK_ATTR_BUS_NAME, dev.Bus)
+	ae.String(unix.DEVLINK_ATTR_DEV_NAME, dev.Device)
+	data, err := ae.Encode()
 	if err != nil {
 		return nil, err
 	}
