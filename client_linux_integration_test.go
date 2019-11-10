@@ -59,10 +59,7 @@ func TestLinuxClientIntegration(t *testing.T) {
 			tables = append(tables, tt...)
 		}
 
-		if len(tables) == 0 {
-			t.Fatalf("failed to retrieve any DPIPE tables from devices")
-		}
-
+		// Just print all DPIPE tables that are available.
 		for _, table := range tables {
 			t.Logf("dpipe_table: %+v", table)
 		}
