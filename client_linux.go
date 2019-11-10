@@ -190,37 +190,39 @@ func parseDPIPETables(msgs []genetlink.Message) ([]*DPIPETable, error) {
 			case unix.DEVLINK_ATTR_DEV_NAME:
 				dev = ad.String()
 			case unix.DEVLINK_ATTR_DPIPE_TABLES:
-				tablesData := ad.Bytes()
-				adTables, err := netlink.NewAttributeDecoder(tablesData)
-				if err != nil {
-					continue
-				}
-				for adTables.Next() {
-					if adTables.Type() == unix.DEVLINK_ATTR_DPIPE_TABLE {
-						tableData := adTables.Bytes()
-						adTable, err := netlink.NewAttributeDecoder(tableData)
-						if err != nil {
-							continue
-						}
-						var t DPIPETable
+				// Netlink array of DPIPE tables.
+				ad.Nested(func(nad *netlink.AttributeDecoder) error {
+					for nad.Next() {
+						t := parseDPIPETable(nad)
 						t.Bus = bus
 						t.Device = dev
-						for adTable.Next() {
-							switch adTable.Type() {
-							case unix.DEVLINK_ATTR_DPIPE_TABLE_NAME:
-								t.Name = adTable.String()
-							case unix.DEVLINK_ATTR_DPIPE_TABLE_SIZE:
-								t.Size = adTable.Uint64()
-							case unix.DEVLINK_ATTR_DPIPE_TABLE_COUNTERS_ENABLED:
-								t.CountersEnabled = adTable.Uint8() != 0
-							}
-						}
-						ts = append(ts, &t)
+						ts = append(ts, t)
 					}
-				}
+					return nil
+				})
 			}
 
 		}
 	}
 	return ts, nil
+}
+
+// parseDPIPETable parses a single DPIPE table from a netlink attribute payload.
+func parseDPIPETable(ad *netlink.AttributeDecoder) *DPIPETable {
+	var t DPIPETable
+	ad.Nested(func(nad *netlink.AttributeDecoder) error {
+		// Netlink entry for a single DPIPE table.
+		for nad.Next() {
+			switch nad.Type() {
+			case unix.DEVLINK_ATTR_DPIPE_TABLE_NAME:
+				t.Name = nad.String()
+			case unix.DEVLINK_ATTR_DPIPE_TABLE_SIZE:
+				t.Size = nad.Uint64()
+			case unix.DEVLINK_ATTR_DPIPE_TABLE_COUNTERS_ENABLED:
+				t.CountersEnabled = nad.Uint8() != 0
+			}
+		}
+		return nil
+	})
+	return &t
 }
