@@ -39,9 +39,9 @@ func (c *Client) Ports() ([]*Port, error) {
 	return c.c.Ports()
 }
 
-// DpipeTables retrieves all devlink DPIPE tables attached to specified device on this system.
-func (c *Client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
-	return c.c.DpipeTables(dev)
+// DPIPETables retrieves all devlink DPIPE tables attached to specified device on this system.
+func (c *Client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
+	return c.c.DPIPETables(dev)
 }
 
 // An osClient is the operating system-specific implementation of Client.
@@ -49,7 +49,7 @@ type osClient interface {
 	io.Closer
 	Devices() ([]*Device, error)
 	Ports() ([]*Port, error)
-	DpipeTables(*Device) ([]*DpipeTable, error)
+	DPIPETables(*Device) ([]*DPIPETable, error)
 }
 
 // A Device is a devlink device.
@@ -80,8 +80,10 @@ type Port struct {
 	Name   string
 }
 
-// A DpipeTable is a devlink DPIPE table
-type DpipeTable struct {
+// A DPIPETable is a devlink pipeline debugging (DPIPE) table.
+// For more information on DPIPE, see:
+// https://github.com/Mellanox/mlxsw/wiki/Pipeline-Debugging-(DPIPE)
+type DPIPETable struct {
 	Bus             string
 	Device          string
 	Name            string

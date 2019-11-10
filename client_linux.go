@@ -65,8 +65,8 @@ func (c *client) Ports() ([]*Port, error) {
 	return parsePorts(msgs)
 }
 
-// DpipeTables implements osClient.
-func (c *client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
+// DPIPETables implements osClient.
+func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
 	if dev == nil {
 		return nil, fmt.Errorf("invalid argument")
 	}
@@ -83,7 +83,7 @@ func (c *client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
 		return nil, err
 	}
 
-	return parseDpipeTables(msgs)
+	return parseDPIPETables(msgs)
 }
 
 // execute executes the specified command with additional header flags. The
@@ -164,15 +164,15 @@ func parsePorts(msgs []genetlink.Message) ([]*Port, error) {
 	return ps, nil
 }
 
-// parseDpipeTables parses DPIPE tables from a slice of generic netlink messages.
-func parseDpipeTables(msgs []genetlink.Message) ([]*DpipeTable, error) {
+// parseDPIPETables parses DPIPE tables from a slice of generic netlink messages.
+func parseDPIPETables(msgs []genetlink.Message) ([]*DPIPETable, error) {
 	var bus, dev string
 	if len(msgs) == 0 {
 		// No devlink response found.
 		return nil, nil
 	}
 
-	ts := make([]*DpipeTable, 0, len(msgs))
+	ts := make([]*DPIPETable, 0, len(msgs))
 	for _, m := range msgs {
 		ad, err := netlink.NewAttributeDecoder(m.Data)
 		if err != nil {
@@ -198,7 +198,7 @@ func parseDpipeTables(msgs []genetlink.Message) ([]*DpipeTable, error) {
 						if err != nil {
 							continue
 						}
-						var t DpipeTable
+						var t DPIPETable
 						t.Bus = bus
 						t.Device = dev
 						for adTable.Next() {

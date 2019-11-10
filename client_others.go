@@ -40,6 +40,6 @@ func (c *client) Ports() ([]*Port, error) {
 }
 
 // PID implements osClient.
-func (c *client) DpipeTables(dev *Device) ([]*DpipeTable, error) {
+func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
 	return nil, errUnimplemented
 }

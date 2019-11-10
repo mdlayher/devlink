@@ -54,7 +54,7 @@ func TestLinuxClientEmptyResponse(t *testing.T) {
 			name: "dpipe_tables",
 			fn: func(t *testing.T, c *client) {
 				dev := Device{bus, device}
-				tables, err := c.DpipeTables(&dev)
+				tables, err := c.DPIPETables(&dev)
 				if err != nil {
 					t.Fatalf("failed to get DPIPE tables: %v", err)
 				}

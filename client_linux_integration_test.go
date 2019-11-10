@@ -45,14 +45,14 @@ func TestLinuxClientIntegration(t *testing.T) {
 	})
 
 	t.Run("dpipe_tables", func(t *testing.T) {
-		var tables []*devlink.DpipeTable
+		var tables []*devlink.DPIPETable
 		devices, err := c.Devices()
 		if err != nil {
 			t.Fatalf("failed to get devices: %v", err)
 		}
 
 		for _, d := range devices {
-			tt, err := c.DpipeTables(d)
+			tt, err := c.DPIPETables(d)
 			if err != nil {
 				t.Errorf("failed to get DPIPE table from device %v: %v", d, err)
 			}
