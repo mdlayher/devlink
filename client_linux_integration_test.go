@@ -43,4 +43,25 @@ func TestLinuxClientIntegration(t *testing.T) {
 			t.Logf("port: %+v", p)
 		}
 	})
+
+	t.Run("dpipe_tables", func(t *testing.T) {
+		var tables []*devlink.DPIPETable
+		devices, err := c.Devices()
+		if err != nil {
+			t.Fatalf("failed to get devices: %v", err)
+		}
+
+		for _, d := range devices {
+			tt, err := c.DPIPETables(d)
+			if err != nil {
+				t.Errorf("failed to get DPIPE table from device %v: %v", d, err)
+			}
+			tables = append(tables, tt...)
+		}
+
+		// Just print all DPIPE tables that are available.
+		for _, table := range tables {
+			t.Logf("dpipe_table: %+v", table)
+		}
+	})
 }

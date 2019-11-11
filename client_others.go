@@ -38,3 +38,8 @@ func (c *client) Devices() ([]*Device, error) {
 func (c *client) Ports() ([]*Port, error) {
 	return nil, errUnimplemented
 }
+
+// PID implements osClient.
+func (c *client) DPIPETables(dev *Device) ([]*DPIPETable, error) {
+	return nil, errUnimplemented
+}
